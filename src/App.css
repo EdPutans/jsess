@@ -40,3 +40,37 @@
 button {
   font-size: calc(10px + 2vmin);
 }
+
+:root {
+  --size: 30px;
+}
+
+.board{
+  display: grid;
+  grid-template-columns: repeat(8, var(--size));
+  grid-template-rows: repeat(8, var(--size));
+  width: calc((var(--size) * 8));
+  border: 1px solid grey;
+}
+.cell {
+  height: var(--size);
+  width: var(--size);
+  display: grid;
+  place-content: center;
+  -webkit-text-stroke: 1px black;
+  font-size: calc(var(--size) * 0.9);
+  cursor: pointer;
+}
+
+.cell-black {
+  background-color: #626262;
+}
+.cell-white {
+  background-color: white;
+}
+.figure-white{
+  color: white;
+}
+.figure-black{
+  color: black;
+}

@@ -5,3 +5,13 @@ type GrowToSize<T, A extends Array<T>, N extends number> = { 0: A, 1: GrowToSize
 // force an array to only have a certain size
 export type FixedLengthArray<T, N extends number> = GrowToSize<T, [], N>;
 
+
+// TODO: translate to ENG later
+//  type NameEng = "pawn" | "rook" | "knight" | "bishop" | "queen" | "king";
+export type Name = "peshka" | "tura" | "konj" | "oficer" | "dama" | "korolj";
+export type Icon = '♜' | '♞' | '♝' | '♛' | '♚' | '♟';
+export type Color = 'black' | 'white';
+export type Figure = { icon: Icon; name: Name; color: Color };
+export type Position = Figure | null;
+export type Row = FixedLengthArray<Position, 8>
+export type Board = FixedLengthArray<Row, 8>;

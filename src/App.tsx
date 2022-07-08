@@ -1,111 +1,77 @@
 import { useState } from 'react'
 import './App.css'
-import { FixedLengthArray } from './typesNShit';
+import { createHighlightBoard, createStartingBoard } from './helpers';
+import { Position } from './typesNShit';
 
-// '♕'
-// '♖'
-// '♗'
-// '♘'
-// '♙'
-// [K in `${Figure['color']}${Name}`]: Figure
-
-// blacktura: { icon: '♜', name: "tura", color: 'black' },
-// blackkonj: { icon: '♞', name: "konj", color: 'black' },
-// blackoficer: { icon: '♝', name: "oficer", color: 'black' },
-// blackdama: { icon: '♛', name: 'dama', color: 'black' },
-// blackkorolj: { icon: '♚', name: 'korolj', color: 'black' },
-// blackpeshka: { icon: '♟', name: "peshka", color: 'black' },
-
-const figures: {
-  [K in Color]: {
-    [K in Name]: Figure
-  }
-} = {
-  white: {
-    // todo: might not need color
-    tura: { icon: '♜', name: "tura", color: 'white' },
-    konj: { icon: '♞', name: "konj", color: 'white' },
-    oficer: { icon: '♝', name: "oficer", color: 'white' },
-    dama: { icon: '♛', name: "dama", color: 'white' },
-    korolj: { icon: '♚', name: "korolj", color: 'white' },
-    peshka: { icon: '♟', name: "peshka", color: 'white' },
-  },
-  black: {
-    tura: { icon: '♜', name: "tura", color: 'white' },
-    konj: { icon: '♞', name: "konj", color: 'white' },
-    oficer: { icon: '♝', name: "oficer", color: 'white' },
-    dama: { icon: '♛', name: "dama", color: 'white' },
-    korolj: { icon: '♚', name: "korolj", color: 'white' },
-    peshka: { icon: '♟', name: "peshka", color: 'white' },
-  }
-}
-
-// TODO: translate to ENG later
-//  type NameEng = "pawn" | "rook" | "knight" | "bishop" | "queen" | "king";
-type Name = "peshka" | "tura" | "konj" | "oficer" | "dama" | "korolj";
-type Icon = '♜' | '♞' | '♝' | '♛' | '♚' | '♟';
-type Color = 'black' | 'white';
-type Figure = { icon: Icon; name: Name; color: Color };
-type Position = Figure | null;
-type Row = FixedLengthArray<Position, 8>
-type Board = FixedLengthArray<Row, 8>;
-
-function createFilledRow<T extends Position>(item: T): FixedLengthArray<T, 8> {
-  return [...new Array(8)].fill(item) as FixedLengthArray<T, 8>
-}
-
-const createStartingPowerRow = (color: Figure['color']): Row => [
-  figures[color].tura,
-  figures[color].konj,
-  figures[color].oficer,
-  figures[color][color === 'white' ? 'dama' : 'korolj'],
-  figures[color][color === 'black' ? 'dama' : 'korolj'],
-  figures[color].oficer,
-  figures[color].konj,
-  figures[color].tura,
-]
-
-const createStartingBoard = (): Board => [
-  // black figures
-  createStartingPowerRow('black'),
-  createFilledRow(figures.black.peshka),
-  createFilledRow(null),
-  createFilledRow(null),
-  createFilledRow(null),
-  createFilledRow(null),
-  createFilledRow(figures.white.peshka),
-  createStartingPowerRow('white'),
-  // white figures
-
-];
-
-function getShowPossibleMoves(
-  figure: Position, rowIndexOnBoard: number, cellIndexInRow: number) {
-  if (!figure) return undefined;
-  // soooooooo many rules will go here
-  if (figure.name !== 'oficer') return undefined;
-
-  // test algorithm to get moves for a bishop:
-  // WIP
-
-  return () => console.log(figure)
-}
 
 function App() {
   const [board, setBoard] = useState(createStartingBoard());
+  const [highlights, setHighlights] = useState(createHighlightBoard());
+
+
+  function showPossibleMoves(
+    figure: Position, rowIndexOnBoard: number, cellIndexInRow: number) {
+    const _highlights = createHighlightBoard();
+    setHighlights(_highlights)
+    if (!figure) return;
+    // soooooooo many rules will go here
+
+    // test algorithm to get moves for a bishop:
+    if (figure.name !== 'oficer') return;
+
+    const indexes: Array<{ x: number, y: number }> = [
+      { y: rowIndexOnBoard, x: cellIndexInRow }
+    ]
+
+    for (let _y in highlights) {
+      const row = highlights[_y];
+
+      for (let _x in row) {
+        const x = Number(_x);
+        const y = Number(_y);
+
+        if (indexes.find(indObj => indObj.x === x && indObj.y === y)) {
+
+          for (let i = 0; i < 8; i++) {
+            if (_highlights[y + i] !== undefined) {
+
+              if (_highlights[y + i]?.[x + i] !== undefined)
+                _highlights[y + i][x + i] = true
+
+              if (_highlights[y + i]?.[x - i] !== undefined)
+                _highlights[y + i][x - i] = true
+
+            }
+            if (_highlights[y - i] !== undefined) {
+              if (_highlights[y - i][x + i] !== undefined)
+                _highlights[y - i][x + i] = true
+
+              if (_highlights[y - i][x - i] !== undefined)
+                _highlights[y - i][x - i] = true
+
+            }
+          }
+        }
+      }
+    }
+
+    setHighlights(_highlights);
+
+  }
 
   return <div className='board'>
     {board.map((row, rowIndexOnBoard) =>
       row.map((figure, cellIndexInRow) => {
         const backgroundColorClass = (rowIndexOnBoard + cellIndexInRow) % 2 === 0 ? 'black' : 'white';
         const color = figure?.color;
-        const isHighlighted = false;
+        const isHighlighted = highlights[rowIndexOnBoard][cellIndexInRow];
 
         return <div
-          onClick={getShowPossibleMoves(figure, rowIndexOnBoard, cellIndexInRow)}
+          onClick={() => showPossibleMoves(figure, rowIndexOnBoard, cellIndexInRow)}
           style={{ cursor: figure?.icon ? 'pointer' : 'auto', backgroundColor: isHighlighted ? 'pink' : undefined }}
           className={`cell cell-${backgroundColorClass} figure-${color}`}
         >
+          <div style={{ position: 'absolute', fontSize: 7, color: 'red' }}>x: {cellIndexInRow}, y: {rowIndexOnBoard}</div>
           {figure?.icon || null}
         </div>
       }))

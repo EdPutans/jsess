@@ -5,7 +5,7 @@
 // '♙'
 // [K in `${Figure['color']}${Name}`]: Figure
 
-import { Board, Color, Figure, FixedLengthArray, Name, Position } from "./typesNShit";
+import { Board, Color, Figure, FixedLengthArray, Name, Position, Row } from "./typesNShit";
 
 // blacktura: { icon: '♜', name: "tura", color: 'black' },
 // blackkonj: { icon: '♞', name: "konj", color: 'black' },

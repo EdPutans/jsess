@@ -38,6 +38,7 @@ function App() {
           for (let i = 1; i <= 7; i++) {
             if (_highlights[y + i] !== undefined) {
               const row = _highlights[y + i];
+
               if (board[y + i][x + i] !== null && !downRightOff) downRightOff = figure?.color === board[y + i][x + i]?.color
               if (row[x + i] !== undefined && !downRightOff) row[x + i] = true
               if (board[y + i][x + i] !== null) downRightOff = true
@@ -49,11 +50,11 @@ function App() {
             }
             if (_highlights[y - i] !== undefined) {
               const row = _highlights[y - i];
-              if (board[y - i][x + i] !== null && !upRightOff) upRightOff = figure?.color === board[y + i][x + i]?.color
+              if (board[y - i][x + i] !== null && !upRightOff) upRightOff = figure?.color === board[y - i][x + i]?.color
               if (row[x + i] !== undefined && !upRightOff) row[x + i] = true
               if (board[y - i][x + i] !== null) upRightOff = true
 
-              if (board[y - i][x + i] !== null && !upLeftOff) upLeftOff = figure?.color === board[y + i][x - i]?.color
+              if (board[y - i][x + i] !== null && !upLeftOff) upLeftOff = figure?.color === board[y - i][x - i]?.color
               if (row[x - i] !== undefined && !upLeftOff) row[x - i] = true
               if (board[y - i][x - i] !== null) upLeftOff = true
             }
@@ -67,6 +68,7 @@ function App() {
   }
 
   board[3][4] = figures.white.oficer
+  board[2][2] = figures.black.oficer
 
   console.log(board)
   return <div className='board'>

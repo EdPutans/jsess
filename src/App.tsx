@@ -1,91 +1,53 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
-import { createHighlightBoard, createStartingBoard, figures } from './helpers';
-import { Position } from './typesNShit';
+import { createStartingBoard, figures } from './helpers';
+import { highlightDiagonals, highlightStraights, highlightVertsAndHorizontals } from './moves';
+import { Board, Position } from './typesNShit';
 
 
 function App() {
   const [board, setBoard] = useState(createStartingBoard());
-  const [highlights, setHighlights] = useState(createHighlightBoard());
-
 
   function showPossibleMoves(figure: Position, rowIndexOnBoard: number, cellIndexInRow: number) {
-    console.log(figure, figure?.name, rowIndexOnBoard, cellIndexInRow);
-    const _highlights = createHighlightBoard();
-    setHighlights(_highlights)
+    if (!('name' in figure)) return;
 
-    if (!figure) return;
-    // soooooooo many rules will go here
-
+    let _board = [...board] as Board;
     // test algorithm to get moves for a bishop:
-    if (figure.name !== 'oficer') return;
-
-    _highlights[rowIndexOnBoard][cellIndexInRow] = true;
-
-    function highlightDiagonals() {
-      for (let _y in highlights) {
-        const row = highlights[_y];
-
-        for (let _x in row) {
-          const x = Number(cellIndexInRow);
-          const y = Number(rowIndexOnBoard);
-
-          let upLeftOff = false
-          let upRightOff = false
-          let downLeftOff = false
-          let downRightOff = false
-
-          for (let i = 1; i <= 7; i++) {
-            if (_highlights[y + i] !== undefined) {
-              const row = _highlights[y + i];
-
-              if (board[y + i][x + i] !== null && !downRightOff) downRightOff = figure?.color === board[y + i][x + i]?.color
-              if (row[x + i] !== undefined && !downRightOff) row[x + i] = true
-              if (board[y + i][x + i] !== null) downRightOff = true
-
-              if (board[y + i][x + i] !== null && !downLeftOff) downLeftOff = figure?.color === board[y + i][x - i]?.color
-              if (row[x - i] !== undefined && !downLeftOff) row[x - i] = true
-              if (board[y + i][x - i] !== null) downLeftOff = true
-
-            }
-            if (_highlights[y - i] !== undefined) {
-              const row = _highlights[y - i];
-              if (board[y - i][x + i] !== null && !upRightOff) upRightOff = figure?.color === board[y - i][x + i]?.color
-              if (row[x + i] !== undefined && !upRightOff) row[x + i] = true
-              if (board[y - i][x + i] !== null) upRightOff = true
-
-              if (board[y - i][x + i] !== null && !upLeftOff) upLeftOff = figure?.color === board[y - i][x - i]?.color
-              if (row[x - i] !== undefined && !upLeftOff) row[x - i] = true
-              if (board[y - i][x - i] !== null) upLeftOff = true
-            }
-          }
-        }
-      }
+    if (figure.name === 'oficer') {
+      _board = highlightDiagonals({ boardParam: board, rowIndexOnBoard, cellIndexInRow });
     }
-    highlightDiagonals()
+    else if (figure.name === 'tura') {
+      _board = highlightStraights({ boardParam: board, rowIndexOnBoard, cellIndexInRow });
+    }
+    else if (figure.name === 'dama') {
+      _board = highlightVertsAndHorizontals({ boardParam: board, rowIndexOnBoard, cellIndexInRow });
+    }
 
-    setHighlights(_highlights);
+    setBoard(_board);
   }
 
-  board[3][4] = figures.white.oficer
-  board[2][2] = figures.black.oficer
+  useEffect(() => {
+    board[2][2] = figures.black.dama
+    board[3][4] = figures.white.tura
+  }, [board])
 
-  console.log(board)
+  // console.log(board)
   return <div className='board'>
     {board.map((row, rowIndexOnBoard) =>
       row.map((figure, cellIndexInRow) => {
-        const backgroundColorClass = (rowIndexOnBoard + cellIndexInRow) % 2 === 0 ? 'black' : 'white';
-        const color = figure?.color;
-        const isHighlighted = highlights[rowIndexOnBoard][cellIndexInRow];
+        const isFigure = 'color' in figure;
+
+        const cellColorClass = (rowIndexOnBoard + cellIndexInRow) % 2 === 0 ? 'black' : 'white';
+        const figureColor = isFigure ? figure.color : undefined;
 
         return <div
           key={cellIndexInRow + rowIndexOnBoard}
           onClick={() => showPossibleMoves(figure, rowIndexOnBoard, cellIndexInRow)}
-          style={{ cursor: figure?.icon ? 'pointer' : 'auto', backgroundColor: isHighlighted ? 'pink' : undefined }}
-          className={`cell cell-${backgroundColorClass} figure-${color}`}
+          style={{ cursor: isFigure && figure?.icon ? 'pointer' : 'auto', backgroundColor: figure.isHighlighted ? 'pink' : undefined }}
+          className={`cell cell-${cellColorClass} figure-${figureColor}`}
         >
           <div style={{ position: 'absolute', fontSize: 7, color: 'red' }}>x: {cellIndexInRow}, y: {rowIndexOnBoard}</div>
-          {figure?.icon || null}
+          {(isFigure && figure?.icon) || null}
         </div>
       }))
     }

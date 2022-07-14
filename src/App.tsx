@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import { createStartingBoard, figures } from './helpers';
-import { highlightDama, highlightKorolj, highlightOficer, highlightTura } from './moves';
-import { Board, Position } from './typesNShit';
+import { highlightDama, highlightKonj, highlightKorolj, highlightOficer, highlightTura } from './moves';
+import { Board, Figure, Position } from './typesNShit';
 
 function App() {
   const [board, setBoard] = useState(createStartingBoard());
+  const [selectedFigure, setSelectedFigure] = useState<Figure | null>(null);
 
-  function showPossibleMoves(figure: Position, rowIndexOnBoard: number, cellIndexInRow: number) {
+  function showPossibleMoves(rowIndexOnBoard: number, cellIndexInRow: number) {
+    let figure: Position = board[rowIndexOnBoard][cellIndexInRow];
     if (!('name' in figure)) return;
 
     let _board = [...board] as Board;
@@ -26,6 +28,9 @@ function App() {
       case 'korolj':
         _board = highlightKorolj(props);
         break;
+      case 'konj':
+        _board = highlightKonj(props);
+        break;
       default:
         break;
     }
@@ -35,9 +40,8 @@ function App() {
 
   useEffect(() => {
     let _board = [...board] as Board;
-    _board[2][2] = figures.black.dama
-    _board[3][4] = figures.white.tura
-    _board[4][4] = figures.white.korolj
+    _board[3][4] = figures.white.konj
+    _board[5][4] = figures.white.tura
     setBoard(_board);
   }, [])
 
@@ -46,13 +50,31 @@ function App() {
     {board.map((row, rowIndexOnBoard) =>
       row.map((figure, cellIndexInRow) => {
         const isFigure = 'color' in figure;
-
         const cellColorClass = (rowIndexOnBoard + cellIndexInRow) % 2 === 0 ? 'black' : 'white';
         const figureColor = isFigure ? figure.color : undefined;
 
+        function getAction(figure: Position) {
+          // if (!('name' in figure)) return;
+          if (!selectedFigure) {
+            return () => {
+              showPossibleMoves(rowIndexOnBoard, cellIndexInRow);
+              setSelectedFigure(figure ||);
+            }
+          }
+          // move;
+          return () => {
+            const canMoveHere = board[rowIndexOnBoard][cellIndexInRow].isHighlighted;
+            if (canMoveHere) {
+              console.log('moving to', rowIndexOnBoard, cellIndexInRow);
+              return;
+            }
+            setSelectedFigure(figure);
+          }
+        }
+
         return <div
           key={cellIndexInRow + rowIndexOnBoard}
-          onClick={() => showPossibleMoves(figure, rowIndexOnBoard, cellIndexInRow)}
+          onClick={getAction(figure)}
           style={{ cursor: isFigure && figure?.icon ? 'pointer' : 'auto', backgroundColor: figure.isHighlighted ? 'pink' : undefined }}
           className={`cell cell-${cellColorClass} figure-${figureColor}`}
         >

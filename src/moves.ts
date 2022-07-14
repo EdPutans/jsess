@@ -6,6 +6,12 @@ type HighlightProps = {
   cellIndexInRow: number,
 }
 
+type HighlightDirectionProps = HighlightProps & {
+  // NOTE: limit is the max amount of cells to highlight away in one direction from a figure
+  // 1 for king, 7 for bishop.
+  limit: 1 | 7;
+}
+
 function clearBoardHighlights({
   boardParam
 }: { boardParam: Board }): Board {
@@ -19,8 +25,8 @@ function isOccupied(cell: Position): cell is Figure {
 }
 
 export function highlightDiagonals({
-  boardParam, rowIndexOnBoard, cellIndexInRow
-}: HighlightProps): Board {
+  boardParam, rowIndexOnBoard, cellIndexInRow, limit
+}: HighlightDirectionProps): Board {
   const figure = boardParam[rowIndexOnBoard][cellIndexInRow] as Figure;
 
   boardParam[rowIndexOnBoard][cellIndexInRow].isHighlighted = true;
@@ -33,7 +39,7 @@ export function highlightDiagonals({
   let downLeftOff = false
   let downRightOff = false
 
-  for (let i = 1; i <= 7; i++) {
+  for (let i = 1; i <= limit; i++) {
     if (boardParam[y + i] !== undefined) {
 
       let currentCell = boardParam[y + i][x + i]
@@ -65,7 +71,10 @@ export function highlightDiagonals({
 }
 
 
-export function highlightStraights({ boardParam, rowIndexOnBoard, cellIndexInRow }: HighlightProps): Board {
+
+export function highlightStraights({
+  boardParam, rowIndexOnBoard, cellIndexInRow, limit
+}: HighlightDirectionProps): Board {
   const figure = boardParam[rowIndexOnBoard][cellIndexInRow] as Figure;
 
   boardParam[rowIndexOnBoard][cellIndexInRow].isHighlighted = true;
@@ -78,7 +87,7 @@ export function highlightStraights({ boardParam, rowIndexOnBoard, cellIndexInRow
   let downOff = false
   let upOff = false
 
-  for (let i = 1; i < 7; i++) {
+  for (let i = 1; i <= limit; i++) {
     if (boardParam[y + i] !== undefined) {
       let currentCell = boardParam[y + i][x];
 
@@ -116,14 +125,14 @@ export function highlightStraights({ boardParam, rowIndexOnBoard, cellIndexInRow
 export function highlightOficer({ boardParam, rowIndexOnBoard, cellIndexInRow }: HighlightProps): Board {
   let board = clearBoardHighlights({ boardParam })
 
-  highlightDiagonals({ boardParam: board, cellIndexInRow, rowIndexOnBoard })
+  highlightDiagonals({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 7 })
   return board;
 }
 
 export function highlightTura({ boardParam, rowIndexOnBoard, cellIndexInRow }: HighlightProps): Board {
   let board = clearBoardHighlights({ boardParam })
 
-  highlightStraights({ boardParam: board, cellIndexInRow, rowIndexOnBoard })
+  highlightStraights({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 7 })
   return board;
 }
 export function highlightDama({
@@ -131,7 +140,18 @@ export function highlightDama({
 }: HighlightProps) {
   let board = clearBoardHighlights({ boardParam })
 
-  highlightDiagonals({ boardParam: board, cellIndexInRow, rowIndexOnBoard })
-  highlightStraights({ boardParam: board, cellIndexInRow, rowIndexOnBoard })
+  highlightDiagonals({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 7 })
+  highlightStraights({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 7 })
   return board
+}
+
+export function highlightKorolj({
+  boardParam, rowIndexOnBoard, cellIndexInRow
+}: HighlightProps): Board {
+  let board = clearBoardHighlights({ boardParam })
+
+  highlightStraights({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 1 })
+  highlightDiagonals({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 1 })
+
+  return board;
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import { createStartingBoard, figures } from './helpers';
-import { highlightDama, highlightDiagonals, highlightOficer, highlightStraights, highlightTura, highlightVertsAndHorizontals } from './moves';
+import { highlightDama, highlightKorolj, highlightOficer, highlightTura } from './moves';
 import { Board, Position } from './typesNShit';
 
 function App() {
@@ -11,16 +11,25 @@ function App() {
     if (!('name' in figure)) return;
 
     let _board = [...board] as Board;
-    // test algorithm to get moves for a bishop:
-    if (figure.name === 'oficer') {
-      _board = highlightOficer({ boardParam: _board, rowIndexOnBoard, cellIndexInRow });
+    const props = { boardParam: _board, rowIndexOnBoard, cellIndexInRow };
+
+    switch (figure.name) {
+      case 'dama':
+        _board = highlightDama(props);
+        break;
+      case 'oficer':
+        _board = highlightOficer(props);
+        break;
+      case 'tura':
+        _board = highlightTura(props);
+        break;
+      case 'korolj':
+        _board = highlightKorolj(props);
+        break;
+      default:
+        break;
     }
-    else if (figure.name === 'tura') {
-      _board = highlightTura({ boardParam: _board, rowIndexOnBoard, cellIndexInRow });
-    }
-    else if (figure.name === 'dama') {
-      _board = highlightDama({ boardParam: _board, rowIndexOnBoard, cellIndexInRow });
-    }
+
     setBoard(_board);
   }
 
@@ -28,6 +37,7 @@ function App() {
     let _board = [...board] as Board;
     _board[2][2] = figures.black.dama
     _board[3][4] = figures.white.tura
+    _board[4][4] = figures.white.korolj
     setBoard(_board);
   }, [])
 

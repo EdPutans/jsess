@@ -21,7 +21,9 @@ export function clearBoardHighlights({
 }
 
 function isOccupied(cell: Position): cell is Figure {
-  return (cell && ("color" in cell));
+  if (!cell) return false;
+
+  return "color" in cell;
 }
 
 export function highlightDiagonals({
@@ -137,6 +139,7 @@ export function highlightTura({ boardParam, rowIndexOnBoard, cellIndexInRow }: H
   highlightStraights({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 7 })
   return board;
 }
+
 export function highlightDama({
   boardParam, rowIndexOnBoard, cellIndexInRow
 }: HighlightProps) {
@@ -191,3 +194,64 @@ export function highlightKonj({
 
   return board;
 }
+
+export function highlightPeshka({
+  boardParam, rowIndexOnBoard, cellIndexInRow
+}: HighlightProps): Board {
+  let board = clearBoardHighlights({ boardParam })
+
+  const x = Number(cellIndexInRow);
+  const y = Number(rowIndexOnBoard);
+  const figure = board[y][x] as Figure;
+
+  figure.isHighlighted = true;
+
+  // at the moment, only support white side at the bottom and black at the top.
+  const shouldMoveUp = figure.color === 'white';
+
+  if (shouldMoveUp) {
+    const cellUp = board[y - 1][x]
+    cellUp.isHighlighted = !('color' in cellUp);
+    // if numberOfMoves = 0 => 2 lights fwd
+    if (figure.numberOfMoves === 0) {
+      const twoCellsUp = board[y - 2][x]
+      twoCellsUp.isHighlighted = cellUp.isHighlighted && !('color' in twoCellsUp);
+    }
+    if (board[y - 1] && board[y - 1][x + 1]) {
+      const potentialEnemy1 = board[y - 1][x + 1]
+      potentialEnemy1.isHighlighted = isOccupied(potentialEnemy1) && potentialEnemy1.color === 'black'
+    }
+    if (board[y - 1] && board[y - 1][x - 1]) {
+      const potentialEnemy2 = board[y - 1][x - 1]
+      potentialEnemy2.isHighlighted = isOccupied(potentialEnemy2) && potentialEnemy2.color === 'black'
+    }
+  } else {
+    const cellUp = board[y + 1][x]
+    cellUp.isHighlighted = !('color' in cellUp);
+    // if numberOfMoves = 0 => 2 lights fwd
+    if (figure.numberOfMoves === 0) {
+      const twoCellsUp = board[y + 2][x]
+      twoCellsUp.isHighlighted = cellUp.isHighlighted && !('color' in twoCellsUp);
+    }
+    if (board[y + 1] && board[y + 1][x + 1]) {
+      const potentialEnemy1 = board[y + 1][x + 1]
+      potentialEnemy1.isHighlighted = isOccupied(potentialEnemy1) && potentialEnemy1.color === 'black'
+    }
+    if (board[y + 1] && board[y + 1][x - 1]) {
+      const potentialEnemy2 = board[y + 1][x - 1]
+      potentialEnemy2.isHighlighted = isOccupied(potentialEnemy2) && potentialEnemy2.color === 'black'
+    }
+  }
+
+  // if numberOfMoves = 0 => 2 lights fwd
+  // if nubmerOfMoves > 0 => 1 light fwd
+  // if [y+1][x+1] or [y+1][x-1] light
+  return board
+};
+
+
+// add handling for special moves:
+// - rokirovka
+// - transform peshka ->
+// - checkmate
+// - can't nom nom king 🤷🏻‍♂️

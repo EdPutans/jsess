@@ -1,6 +1,4 @@
-.App {
-  text-align: center;
-}
+
 
 .App-logo {
   height: 40vmin;
@@ -13,7 +11,7 @@
   }
 }
 
-.App-header {
+#root {
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
@@ -28,21 +26,8 @@
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-button {
-  font-size: calc(10px + 2vmin);
-}
-
 :root {
-  --size: 30px;
+  --size: 80px;
 }
 
 .board{
@@ -52,9 +37,10 @@ button {
   width: calc((var(--size) * 8));
   border: 1px solid grey;
 }
+
 .cell {
-  height: var(--size);
-  width: var(--size);
+  height: calc(var(--size) - 2px);
+  width: calc(var(--size) - 2px);
   display: grid;
   place-content: center;
   -webkit-text-stroke: 1px black;
@@ -64,13 +50,27 @@ button {
 
 .cell-black {
   background-color: #626262;
+  border:1px solid rgb(122, 122, 122);
 }
 .cell-white {
   background-color: white;
+  border:1px solid rgb(122, 122, 122);
+
 }
 .figure-white{
   color: white;
 }
 .figure-black{
   color: black;
+}
+
+.highlighted {
+  background-color: #ffc107;
+}
+
+.clickable{
+  cursor: pointer;
+}
+.nonclickable{
+  cursor: default;
 }

@@ -12,7 +12,7 @@ export type Cell = { isHighlighted: boolean; }
 export type Name = "peshka" | "tura" | "konj" | "oficer" | "dama" | "korolj";
 export type Icon = '♜' | '♞' | '♝' | '♛' | '♚' | '♟';
 export type Color = 'black' | 'white';
-export type Figure = Cell & { icon: Icon; name: Name; color: Color };
+export type Figure = Cell & { icon: Icon; name: Name; color: Color; numberOfMoves: number };
 
 export type Position = Figure | Cell;
 export type Row = FixedLengthArray<Position, 8>

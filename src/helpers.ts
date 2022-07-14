@@ -23,20 +23,20 @@ export const figures: {
 } = {
   white: {
     // todo: might not need color
-    tura: { icon: '♜', name: "tura", isHighlighted: false, color: 'white' },
-    konj: { icon: '♞', name: "konj", isHighlighted: false, color: 'white' },
-    oficer: { icon: '♝', name: "oficer", isHighlighted: false, color: 'white' },
-    dama: { icon: '♛', name: "dama", isHighlighted: false, color: 'white' },
-    korolj: { icon: '♚', name: "korolj", isHighlighted: false, color: 'white' },
-    peshka: { icon: '♟', name: "peshka", isHighlighted: false, color: 'white' },
+    tura: { icon: '♜', name: "tura", isHighlighted: false, color: 'white', numberOfMoves: 0 },
+    konj: { icon: '♞', name: "konj", isHighlighted: false, color: 'white', numberOfMoves: 0 },
+    oficer: { icon: '♝', name: "oficer", isHighlighted: false, color: 'white', numberOfMoves: 0 },
+    dama: { icon: '♛', name: "dama", isHighlighted: false, color: 'white', numberOfMoves: 0 },
+    korolj: { icon: '♚', name: "korolj", isHighlighted: false, color: 'white', numberOfMoves: 0 },
+    peshka: { icon: '♟', name: "peshka", isHighlighted: false, color: 'white', numberOfMoves: 0 },
   },
   black: {
-    tura: { icon: '♜', name: "tura", isHighlighted: false, color: 'black' },
-    konj: { icon: '♞', name: "konj", isHighlighted: false, color: 'black' },
-    oficer: { icon: '♝', name: "oficer", isHighlighted: false, color: 'black' },
-    dama: { icon: '♛', name: "dama", isHighlighted: false, color: 'black' },
-    korolj: { icon: '♚', name: "korolj", isHighlighted: false, color: 'black' },
-    peshka: { icon: '♟', name: "peshka", isHighlighted: false, color: 'black' },
+    tura: { icon: '♜', name: "tura", isHighlighted: false, color: 'black', numberOfMoves: 0 },
+    konj: { icon: '♞', name: "konj", isHighlighted: false, color: 'black', numberOfMoves: 0 },
+    oficer: { icon: '♝', name: "oficer", isHighlighted: false, color: 'black', numberOfMoves: 0 },
+    dama: { icon: '♛', name: "dama", isHighlighted: false, color: 'black', numberOfMoves: 0 },
+    korolj: { icon: '♚', name: "korolj", isHighlighted: false, color: 'black', numberOfMoves: 0 },
+    peshka: { icon: '♟', name: "peshka", isHighlighted: false, color: 'black', numberOfMoves: 0 },
   }
 }
 

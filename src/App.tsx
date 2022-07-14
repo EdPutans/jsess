@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import { createStartingBoard, figures } from './helpers';
-import { highlightDiagonals, highlightStraights, highlightVertsAndHorizontals } from './moves';
+import { highlightDama, highlightDiagonals, highlightOficer, highlightStraights, highlightTura, highlightVertsAndHorizontals } from './moves';
 import { Board, Position } from './typesNShit';
-
 
 function App() {
   const [board, setBoard] = useState(createStartingBoard());
@@ -14,22 +13,23 @@ function App() {
     let _board = [...board] as Board;
     // test algorithm to get moves for a bishop:
     if (figure.name === 'oficer') {
-      _board = highlightDiagonals({ boardParam: board, rowIndexOnBoard, cellIndexInRow });
+      _board = highlightOficer({ boardParam: _board, rowIndexOnBoard, cellIndexInRow });
     }
     else if (figure.name === 'tura') {
-      _board = highlightStraights({ boardParam: board, rowIndexOnBoard, cellIndexInRow });
+      _board = highlightTura({ boardParam: _board, rowIndexOnBoard, cellIndexInRow });
     }
     else if (figure.name === 'dama') {
-      _board = highlightVertsAndHorizontals({ boardParam: board, rowIndexOnBoard, cellIndexInRow });
+      _board = highlightDama({ boardParam: _board, rowIndexOnBoard, cellIndexInRow });
     }
-
     setBoard(_board);
   }
 
   useEffect(() => {
-    board[2][2] = figures.black.dama
-    board[3][4] = figures.white.tura
-  }, [board])
+    let _board = [...board] as Board;
+    _board[2][2] = figures.black.dama
+    _board[3][4] = figures.white.tura
+    setBoard(_board);
+  }, [])
 
   // console.log(board)
   return <div className='board'>

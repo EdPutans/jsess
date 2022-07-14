@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import { createStartingBoard, figures } from './helpers';
-import { highlightDama, highlightKonj, highlightKorolj, highlightOficer, highlightTura } from './moves';
+import { clearBoardHighlights, highlightDama, highlightKonj, highlightKorolj, highlightOficer, highlightTura } from './moves';
 import { Board, Figure, Position } from './typesNShit';
+
+type SelectedFigure = {
+  figure: Figure;
+  x: number;
+  y: number;
+}
 
 function App() {
   const [board, setBoard] = useState(createStartingBoard());
-  const [selectedFigure, setSelectedFigure] = useState<Figure | null>(null);
+  const [selectedFigure, setSelectedFigure] = useState<SelectedFigure | null>(null);
 
   function showPossibleMoves(rowIndexOnBoard: number, cellIndexInRow: number) {
     let figure: Position = board[rowIndexOnBoard][cellIndexInRow];
@@ -45,7 +51,20 @@ function App() {
     setBoard(_board);
   }, [])
 
-  // console.log(board)
+
+  function moveSelectedFigureTo(to: { x: number, y: number }) {
+    if (!selectedFigure) return;
+
+    let _board = [...board] as Board;
+    _board[to.y][to.x] = selectedFigure.figure;
+    _board[selectedFigure.y][selectedFigure.x] = { isHighlighted: false };
+    _board = clearBoardHighlights({ boardParam: _board });
+
+    setBoard(_board);
+    setSelectedFigure(null);
+
+  }
+
   return <div className='board'>
     {board.map((row, rowIndexOnBoard) =>
       row.map((figure, cellIndexInRow) => {
@@ -53,29 +72,60 @@ function App() {
         const cellColorClass = (rowIndexOnBoard + cellIndexInRow) % 2 === 0 ? 'black' : 'white';
         const figureColor = isFigure ? figure.color : undefined;
 
-        function getAction(figure: Position) {
-          // if (!('name' in figure)) return;
-          if (!selectedFigure) {
-            return () => {
-              showPossibleMoves(rowIndexOnBoard, cellIndexInRow);
-              setSelectedFigure(figure ||);
-            }
+
+        function getCursor() {
+          if (!isFigure) return 'default';
+          if (figure.isHighlighted) return 'pointer'
+
+          return 'default';
+        }
+
+        function getAction(cell: Position) {
+
+          // if not selected ->
+          //   if empty do nothing
+          //   if figure -> highlightMoves for figure
+
+          // if selected ->
+          //   if cell is highlighted -> move there and unselect
+          //   else -> nothing
+
+          function selectFigure() {
+            if (!('name' in figure)) return;
+            console.log('is figure')
+            if (!('name' in cell)) return;
+
+            setSelectedFigure({ figure, x: cellIndexInRow, y: rowIndexOnBoard });
+            showPossibleMoves(rowIndexOnBoard, cellIndexInRow);
           }
-          // move;
-          return () => {
-            const canMoveHere = board[rowIndexOnBoard][cellIndexInRow].isHighlighted;
-            if (canMoveHere) {
-              console.log('moving to', rowIndexOnBoard, cellIndexInRow);
-              return;
+
+
+          if (!selectedFigure) selectFigure()
+
+          else {
+            if (cell.isHighlighted) {
+
+              const x = cellIndexInRow;
+              const y = rowIndexOnBoard;
+              if (selectedFigure.x === x && selectedFigure.y === y) return;
+
+              console.log(`Moving ${selectedFigure.figure.name} to y: ${rowIndexOnBoard} x: ${cellIndexInRow}`)
+
+              moveSelectedFigureTo({ x: cellIndexInRow, y: rowIndexOnBoard });
+            } else {
+              if ('name' in cell) {
+                selectFigure()
+              } else {
+                console.log(`can't move here yo!`)
+              }
             }
-            setSelectedFigure(figure);
           }
         }
 
         return <div
           key={cellIndexInRow + rowIndexOnBoard}
-          onClick={getAction(figure)}
-          style={{ cursor: isFigure && figure?.icon ? 'pointer' : 'auto', backgroundColor: figure.isHighlighted ? 'pink' : undefined }}
+          onClick={() => getAction(figure)}
+          style={{ cursor: getCursor(), backgroundColor: figure.isHighlighted ? 'pink' : undefined }}
           className={`cell cell-${cellColorClass} figure-${figureColor}`}
         >
           <div style={{ position: 'absolute', fontSize: 7, color: 'red' }}>x: {cellIndexInRow}, y: {rowIndexOnBoard}</div>

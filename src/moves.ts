@@ -12,7 +12,7 @@ type HighlightDirectionProps = HighlightProps & {
   limit: 1 | 7;
 }
 
-function clearBoardHighlights({
+export function clearBoardHighlights({
   boardParam
 }: { boardParam: Board }): Board {
 

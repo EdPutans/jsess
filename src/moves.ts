@@ -1,4 +1,4 @@
-import { Board, Figure, Position } from "./typesNShit";
+import { Board, Color, Figure, Position } from "./typesNShit";
 
 type HighlightProps = {
   boardParam: Board,
@@ -20,7 +20,7 @@ export function clearBoardHighlights({
   return board;
 }
 
-function isOccupied(cell: Position): cell is Figure {
+export function isOccupied(cell: Position): cell is Figure {
   if (!cell) return false;
 
   return "color" in cell;
@@ -31,7 +31,6 @@ export function highlightDiagonals({
 }: HighlightDirectionProps): Board {
   const figure = boardParam[rowIndexOnBoard][cellIndexInRow] as Figure;
 
-  boardParam[rowIndexOnBoard][cellIndexInRow].isHighlighted = true;
 
   const x = Number(cellIndexInRow);
   const y = Number(rowIndexOnBoard);
@@ -81,8 +80,6 @@ export function highlightStraights({
 }: HighlightDirectionProps): Board {
   const figure = boardParam[rowIndexOnBoard][cellIndexInRow] as Figure;
 
-  boardParam[rowIndexOnBoard][cellIndexInRow].isHighlighted = true;
-
   const x = Number(cellIndexInRow);
   const y = Number(rowIndexOnBoard);
 
@@ -127,15 +124,17 @@ export function highlightStraights({
 }
 
 export function highlightOficer({ boardParam, rowIndexOnBoard, cellIndexInRow }: HighlightProps): Board {
-  let board = clearBoardHighlights({ boardParam })
+  // let board = clearBoardHighlights({ boardParam })
 
+  let board = [...boardParam] as Board;
   highlightDiagonals({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 7 })
   return board;
 }
 
 export function highlightTura({ boardParam, rowIndexOnBoard, cellIndexInRow }: HighlightProps): Board {
-  let board = clearBoardHighlights({ boardParam })
+  // let board = clearBoardHighlights({ boardParam })
 
+  let board = [...boardParam] as Board;
   highlightStraights({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 7 })
   return board;
 }
@@ -143,7 +142,8 @@ export function highlightTura({ boardParam, rowIndexOnBoard, cellIndexInRow }: H
 export function highlightDama({
   boardParam, rowIndexOnBoard, cellIndexInRow
 }: HighlightProps) {
-  let board = clearBoardHighlights({ boardParam })
+  let board = [...boardParam] as Board;
+  // clearBoardHighlights({ boardParam })
 
   highlightDiagonals({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 7 })
   highlightStraights({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 7 })
@@ -153,18 +153,35 @@ export function highlightDama({
 export function highlightKorolj({
   boardParam, rowIndexOnBoard, cellIndexInRow
 }: HighlightProps): Board {
-  let board = clearBoardHighlights({ boardParam })
+  const figure = boardParam[rowIndexOnBoard][cellIndexInRow];
+  if (!isOccupied(figure)) return boardParam;
+
+  // let board = clearBoardHighlights({ boardParam })
+  let board = [...boardParam] as Board;
 
   highlightStraights({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 1 })
   highlightDiagonals({ boardParam: board, cellIndexInRow, rowIndexOnBoard, limit: 1 })
 
-  return board;
+  const { color } = figure;
+  const enemyColor: Color = color === 'white' ? 'black' : 'white'
+
+  let enemyMovesBoard = getAllPossibleMovesForColor(board, enemyColor);
+
+  const finalBoard = board.map((row, rowInd) => row.map((cell, cellInd) => {
+    if (enemyMovesBoard[rowInd][cellInd].isHighlighted) return { ...cell, isHighlighted: false };
+
+    return cell;
+  })) as Board;
+
+  return finalBoard;
 }
 
 export function highlightKonj({
   boardParam, rowIndexOnBoard, cellIndexInRow
 }: HighlightProps): Board {
-  let board = clearBoardHighlights({ boardParam })
+  // let board = clearBoardHighlights({ boardParam })
+
+  let board = [...boardParam] as Board;
 
   const x = Number(cellIndexInRow);
   const y = Number(rowIndexOnBoard);
@@ -186,7 +203,7 @@ export function highlightKonj({
   for (let [xC, yC] of locationsOfXandY) {
     if (board[y + yC] !== undefined && board[y + yC][x + xC] !== undefined) {
       let cell = board[y + yC][x + xC]
-      if (cell) cell.isHighlighted = (!('color' in cell) || figure.color !== cell.color);
+      if (cell) cell.isHighlighted = (!isOccupied(cell) || figure.color !== cell.color);
 
     }
   }
@@ -198,24 +215,23 @@ export function highlightKonj({
 export function highlightPeshka({
   boardParam, rowIndexOnBoard, cellIndexInRow
 }: HighlightProps): Board {
-  let board = clearBoardHighlights({ boardParam })
+  // let board = clearBoardHighlights({ boardParam })
+  let board = [...boardParam] as Board;
 
   const x = Number(cellIndexInRow);
   const y = Number(rowIndexOnBoard);
   const figure = board[y][x] as Figure;
-
-  figure.isHighlighted = true;
 
   // at the moment, only support white side at the bottom and black at the top.
   const shouldMoveUp = figure.color === 'white';
 
   if (shouldMoveUp) {
     const cellUp = board[y - 1][x]
-    cellUp.isHighlighted = !('color' in cellUp);
+    cellUp.isHighlighted = !isOccupied(cellUp);
     // if numberOfMoves = 0 => 2 lights fwd
     if (figure.numberOfMoves === 0) {
       const twoCellsUp = board[y - 2][x]
-      twoCellsUp.isHighlighted = cellUp.isHighlighted && !('color' in twoCellsUp);
+      twoCellsUp.isHighlighted = cellUp.isHighlighted && !isOccupied(twoCellsUp);
     }
     if (board[y - 1] && board[y - 1][x + 1]) {
       const potentialEnemy1 = board[y - 1][x + 1]
@@ -227,11 +243,11 @@ export function highlightPeshka({
     }
   } else {
     const cellUp = board[y + 1][x]
-    cellUp.isHighlighted = !('color' in cellUp);
+    cellUp.isHighlighted = !isOccupied(cellUp);
     // if numberOfMoves = 0 => 2 lights fwd
     if (figure.numberOfMoves === 0) {
       const twoCellsUp = board[y + 2][x]
-      twoCellsUp.isHighlighted = cellUp.isHighlighted && !('color' in twoCellsUp);
+      twoCellsUp.isHighlighted = cellUp.isHighlighted && !isOccupied(twoCellsUp);
     }
     if (board[y + 1] && board[y + 1][x + 1]) {
       const potentialEnemy1 = board[y + 1][x + 1]
@@ -250,8 +266,79 @@ export function highlightPeshka({
 };
 
 
+export function highlightFigureMovesOnBoard(board: Board, rowIndexOnBoard: number, cellIndexInRow: number): Board {
+  let figure: Position = board[rowIndexOnBoard][cellIndexInRow];
+  if (!isOccupied(figure)) return board;
+
+  let _board = [...board] as Board;
+  const props = { boardParam: _board, rowIndexOnBoard, cellIndexInRow };
+
+  switch (figure.name) {
+    case 'dama':
+      _board = highlightDama(props);
+      break;
+    case 'oficer':
+      _board = highlightOficer(props);
+      break;
+    case 'tura':
+      _board = highlightTura(props);
+      break;
+    case 'korolj':
+      _board = highlightKorolj(props);
+      break;
+    case 'konj':
+      _board = highlightKonj(props);
+      break;
+    case 'peshka':
+      _board = highlightPeshka(props);
+      break;
+    default:
+      break;
+  }
+  return _board;
+}
+
+export function getAllPossibleMovesForColor(boardParam: Board, color: Color) {
+  let board: Board = [...boardParam];
+
+  for (let rowInd in board) {
+    const row = board[rowInd];
+    for (let cellInd in row) {
+      const cell = row[cellInd];
+      if (isOccupied(cell) && cell.color === color)
+        board = highlightFigureMovesOnBoard(board, Number(rowInd), Number(cellInd))
+    }
+  }
+
+  console.log(board.map(row => row.map(cell => cell.isHighlighted ? 'X' : 'O')))
+
+  return board
+}
+
+
+type Coords = { x: number, y: number }
+type Result = { white: Coords | null, black: Coords | null };
+export function findKingsIndexes(board: Board): Result {
+  const result: Result = {
+    white: null,
+    black: null,
+  }
+
+  for (let rowInd in board) {
+    const row = board[rowInd];
+    for (let cellInd in row) {
+      const cell = row[cellInd]
+      if (isOccupied(cell) && cell.name === 'korolj') {
+        result[cell.color] = { y: Number(rowInd), x: Number(cellInd) }
+      }
+    }
+  }
+  return result;
+}
+
 // add handling for special moves:
 // - rokirovka
 // - transform peshka ->
-// - checkmate
+// - check where king can go during a check!
+// - check if game is over
 // - can't nom nom king 🤷🏻‍♂️

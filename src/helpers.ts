@@ -72,3 +72,17 @@ export const createStartingBoard = (): Board => [
   // white figures
 ];
 
+export const createClearBoard = (): Board => [
+  // black figures
+  createFilledRow(emptyCell),
+  createFilledRow(emptyCell),
+  createFilledRow(emptyCell),
+  createFilledRow(emptyCell),
+  createFilledRow(emptyCell),
+  createFilledRow(emptyCell),
+  createFilledRow(emptyCell),
+  createFilledRow(emptyCell),
+  // white figures
+];
+
+

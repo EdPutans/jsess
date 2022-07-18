@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import { createStartingBoard, figures } from './helpers';
-import { clearBoardHighlights, highlightDama, highlightKonj, highlightKorolj, highlightOficer, highlightPeshka, highlightTura } from './moves';
+import { createClearBoard, createStartingBoard, figures } from './helpers';
+import { clearBoardHighlights, findKingsIndexes, highlightDama, highlightFigureMovesOnBoard, highlightKonj, highlightKorolj, highlightOficer, highlightPeshka, highlightTura, isOccupied } from './moves';
 import { Board, Color, Figure, Position } from './typesNShit';
 
 type SelectedFigure = {
@@ -11,48 +11,58 @@ type SelectedFigure = {
 }
 
 function App() {
-  const [board, setBoard] = useState(createStartingBoard());
+  const [board, setBoard] = useState(
+    // createStartingBoard()
+    createClearBoard()
+  );
   const [selectedFigure, setSelectedFigure] = useState<SelectedFigure | null>(null);
-  const [currentMove, setCurrentMove] = useState<Color>('white');
+  const [currentMove, setCurrentMove] = useState<Color>(
+    // 'black'
+    'white'
+  );
+  const [victor, setVictor] = useState<Color | null>(null)
 
   function showPossibleMoves(rowIndexOnBoard: number, cellIndexInRow: number) {
-    let figure: Position = board[rowIndexOnBoard][cellIndexInRow];
-    if (!('name' in figure)) return;
-
-    let _board = [...board] as Board;
-    const props = { boardParam: _board, rowIndexOnBoard, cellIndexInRow };
-
-    switch (figure.name) {
-      case 'dama':
-        _board = highlightDama(props);
-        break;
-      case 'oficer':
-        _board = highlightOficer(props);
-        break;
-      case 'tura':
-        _board = highlightTura(props);
-        break;
-      case 'korolj':
-        _board = highlightKorolj(props);
-        break;
-      case 'konj':
-        _board = highlightKonj(props);
-        break;
-      case 'peshka':
-        _board = highlightPeshka(props);
-        break;
-      default:
-        break;
-    }
-
-    setBoard(_board);
+    setBoard(highlightFigureMovesOnBoard(clearBoardHighlights({ boardParam: board }), rowIndexOnBoard, cellIndexInRow));
   }
 
   useEffect(() => {
+
+  }, [board])
+
+  useEffect(() => {
+    // testing
     let _board = [...board] as Board;
-    _board[3][4] = figures.white.konj
-    _board[5][4] = figures.white.tura
+    _board[3][4] = figures.black.korolj
+    _board[5][3] = figures.white.dama
+    _board[1][5] = figures.white.dama
     setBoard(_board);
+
+
+    const fakeBoard = [..._board] as Board;
+    const kingIndexes = findKingsIndexes(fakeBoard);
+
+    // check white victory
+    if (!kingIndexes.black) return;
+    if (!kingIndexes.white) return;
+    const blackKingMoves = highlightKorolj({ boardParam: fakeBoard, rowIndexOnBoard: kingIndexes.black.y, cellIndexInRow: kingIndexes.black.x });
+    const nbBlackKingMoves = blackKingMoves.reduce((agg, row) => {
+      const nbItemsInRow = row.filter(item => item.isHighlighted).length;
+      return agg + nbItemsInRow;
+    }, 0)
+    if (nbBlackKingMoves === 0) return setVictor('white');
+
+    // check black victory
+    if (!kingIndexes.white) return;
+    const whiteKingMoves = highlightKorolj({ boardParam: fakeBoard, rowIndexOnBoard: kingIndexes.white.y, cellIndexInRow: kingIndexes.white.x });
+    const nbWhiteKingMoves = whiteKingMoves.reduce((agg, row) => {
+      const nbItemsInRow = row.filter(item => item.isHighlighted).length;
+      return agg + nbItemsInRow;
+    }, 0)
+
+    if (nbWhiteKingMoves === 0) return setVictor('black');
+
+
   }, [])
 
 
@@ -76,10 +86,12 @@ function App() {
 
   return <>
     <h1>Current move: {currentMove}</h1>
+    {victor && <h1>VICTORY FOR {victor.toUpperCase()}!!</h1>}
+
     <div className='board'>
       {board.map((row, rowIndexOnBoard) =>
         row.map((position, cellIndexInRow) => {
-          const isFigure = 'color' in position;
+          const isFigure = isOccupied(position);
           const cellColorClass = (rowIndexOnBoard + cellIndexInRow) % 2 === 0 ? 'black' : 'white';
           const figureColor = isFigure ? position.color : undefined;
 
@@ -92,7 +104,7 @@ function App() {
 
           function getAction(cell: Position) {
             function selectFigure() {
-              if (!('name' in position)) return;
+              if (!isOccupied(position)) return;
               if (figureColor !== currentMove) return;
 
               setSelectedFigure({ figure: position, x: cellIndexInRow, y: rowIndexOnBoard });
@@ -109,7 +121,7 @@ function App() {
                 ) return;
                 moveSelectedFigureTo({ x: cellIndexInRow, y: rowIndexOnBoard });
               } else {
-                if ('name' in cell) {
+                if (isOccupied(position)) {
                   selectFigure()
                 } else {
                   console.log(`can't move here yo!`)
@@ -128,8 +140,10 @@ function App() {
               ${position.isHighlighted ? 'highlighted' : ''}
               ${getIsClickable() ? 'clickable' : 'nonclickable'}
             `}
+            //TODO: make it a class
+            style={{ backgroundColor: selectedFigure?.x === cellIndexInRow && selectedFigure?.y === rowIndexOnBoard ? 'pink' : '' }}
           >
-            <div style={{ position: 'absolute', fontSize: 7, color: 'red' }}>x: {cellIndexInRow}, y: {rowIndexOnBoard}</div>
+            <div style={{ position: 'absolute', fontSize: 7 }}>x: {cellIndexInRow}, y: {rowIndexOnBoard}</div>
             {(isFigure && position?.icon) || null}
           </div>
         }))
